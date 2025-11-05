@@ -71,6 +71,7 @@ function LoginCard() {
             <label className='block text-lg font-semibold text-gray-900'>Email</label>
             <input
               type="email"
+              name='email'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email..."
@@ -82,6 +83,7 @@ function LoginCard() {
             <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
+              name='password'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
@@ -90,6 +92,7 @@ function LoginCard() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Hide Password" : "Show Password"}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -98,7 +101,7 @@ function LoginCard() {
           </div>
         </div>
       {/* Remember Me & Forgot Password */}
-        <div className="flex items-center justify-between mt-2 mb-6">
+        {/* <div className="flex items-center justify-between mt-2 mb-6">
           <label className="flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -108,7 +111,7 @@ function LoginCard() {
             />
             <span className="ml-2 text-sm text-gray-700">Remember me</span>
           </label>
-        </div>
+        </div> */}
         {error && <div className='text-red-500 text-center mb-4'>{error}</div>}
 
         {/* Sign In Button */}

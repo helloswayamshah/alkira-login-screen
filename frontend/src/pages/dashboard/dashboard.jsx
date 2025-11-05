@@ -34,6 +34,9 @@ function Dashboard() {
     <div className='flex gap-2 flex-col pl-2'>
       <h1>Dashboard</h1>
       <p>User Roles: {roles.join(', ')}</p>
+      {roles.includes('writer') && <div className='mb-4 w-24 h-24 rounded bg-blue-500 flex items-center justify-center text-white'>
+        Admin Panel
+      </div>}
       <button className='bg-red-500 text-white rounded w-24' onClick={handleLogout}>
         Logout
       </button>

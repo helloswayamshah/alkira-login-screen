@@ -189,6 +189,7 @@ function MfaCard() {
         {otp.map((value, index) => (
           <input
             key={index}
+            name={`otp${index}`}
             ref={(el) => (inputRefs.current[index] = el)}
             type="numeric"
             maxLength="1"

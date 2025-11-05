@@ -140,6 +140,7 @@ function SignupFlow() {
             <label className="block text-lg font-semibold text-gray-900 mb-1">Email</label>
             <input
               type="email"
+              name='email'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email..."
@@ -154,6 +155,7 @@ function SignupFlow() {
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
+                name='password'
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all pr-12"
@@ -196,6 +198,7 @@ function SignupFlow() {
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
+                name='confirmPassword'
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all pr-12"
@@ -222,6 +225,7 @@ function SignupFlow() {
                   <label className="flex items-center cursor-pointer p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
+                  aria-label={r}
                   name="role"
                   value={r}
                   checked={role === r}
