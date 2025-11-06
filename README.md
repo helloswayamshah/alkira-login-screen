@@ -8,3 +8,8 @@ In order to run the project, we need to start by setting up important libraries 
 4. Navigate to the `backend` directory, and run `npm install`.
 5. Make sure that `.env` file exists in the `backend` directory with all the required AUTH0 secrets and credentials provided in the provided `.env`. These variables are required for authentication to work.
 
+## Running the Project
+1. Navigate to the `backend` directory on a terminal and run the command `npm run dev`.
+2. Open a new terminal and navigate to the `frontend` directory and run the command `npm run dev`.
+3. The frontend server will now be running on `http://localhost:3000`, which can be opened in the browser.
+
