@@ -13,3 +13,5 @@ In order to run the project, we need to start by setting up important libraries 
 2. Open a new terminal and navigate to the `frontend` directory and run the command `npm run dev`.
 3. The frontend server will now be running on `http://localhost:3000`, which can be opened in the browser.
 
+## Running the Tests
+1. Navigate to the `frontend` directory on the terminal, and run `npm test`, which will run the frontend and run the e2e tests in a headless mode using `cypress run`.
