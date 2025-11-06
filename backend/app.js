@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import { AUTH0_GRANT_TYPES, MFA_REQUIRED_ERROR } from "./constant.js";
 
 dotenv.config('./.env');
 const app = express();
@@ -14,7 +15,7 @@ const parseAuth0Error = (error) => {
   switch (error.error) {
     case 'invalid_grant':
       return 'Invalid email or password';
-    case 'mfa_required':
+    case MFA_REQUIRED_ERROR:
       return 'MFA required';
     default:
       return error.error_description || error.error || 'Authentication failed';
@@ -41,7 +42,7 @@ app.post("/api/login", async (req, res) => {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        grant_type: 'http://auth0.com/oauth/grant-type/password-realm',
+        grant_type: AUTH0_GRANT_TYPES['password'],
         realm: 'alkira',
         username: email,
         password,
@@ -55,7 +56,7 @@ app.post("/api/login", async (req, res) => {
     const data = await response.json();
 
     // 🧾 MFA required
-    if (data.error === 'mfa_required') {
+    if (data.error === MFA_REQUIRED_ERROR) {
       const challenge = await fetch(`https://${AUTH0_DOMAIN}/mfa/challenge`, {
         method: 'POST',
         headers: {
@@ -110,11 +111,12 @@ app.post("/api/signup", async (req, res) => {
   if (req.body == undefined) {
     return res.status(400).json({ message: "Request body is missing." });
   }
-  const { email, password } = req.body;
+  const { email, password, first_name, last_name } = req.body;
   let { role } = req.body;
-  if (email === "" || password === "" || email == undefined || password == undefined) {
-    return res.status(400).json({ message: "Email and password are required." });
+  if (email === "" || password === "" || email == undefined || password == undefined || first_name == undefined || last_name == undefined || first_name === "") {
+    return res.status(400).json({ message: "email, first name and password are required!" });
   }
+  const full_name = last_name ? `${first_name} ${last_name}` : first_name;
   if (role === "" || role == undefined) {
     role = "reader"; // default role
   }
@@ -147,12 +149,13 @@ app.post("/api/signup", async (req, res) => {
         .status(400)
         .json({ status: 'error', message: 'User with this email already exists.' });
     }
-
+    const username = full_name.replaceAll(' ', '_'); // Auth0 usernames cannot have spaces
     const response = await fetch(`https://${AUTH0_DOMAIN}/dbconnections/signup`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         client_id: AUTH0_CLIENT_ID,
+        name: username,
         email,
         password,
         connection: 'alkira',
@@ -291,7 +294,7 @@ app.post("/api/mfa-verify", async (req, res) => {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        grant_type: 'http://auth0.com/oauth/grant-type/mfa-oob',
+        grant_type: AUTH0_GRANT_TYPES['mfa-oob'],
         client_id: AUTH0_CLIENT_ID,
         client_secret: AUTH0_SECRET,
         mfa_token,
@@ -385,6 +388,103 @@ app.post("/api/resend-mfa", async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
   
+});
+
+app.post("/api/edit-profile", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Authorization header is missing." });
+  }
+  const token = authHeader.split(" ")[1];
+  const { first_name, last_name } = req.body;
+  if (first_name === "" || first_name == undefined) {
+    return res.status(400).json({ message: "First name is required." });
+  }
+  try {
+    const decoded = jwt.decode(token);
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token." });
+    }
+    console.log("Decoded token:", decoded);
+    const userId = decoded.sub;
+    
+    const full_name = last_name ? `${first_name} ${last_name}` : first_name;
+    const accessResponse = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        grant_type: 'client_credentials',
+        client_id: AUTH0_CLIENT_ID,
+        client_secret: AUTH0_SECRET,
+        audience: `https://${AUTH0_DOMAIN}/api/v2/`,
+      }),
+    });
+    const accessData = await accessResponse.json();
+    const mgmtToken = accessData.access_token;
+    const username = full_name.replaceAll(' ', '_'); // Auth0 usernames cannot have spaces
+    
+    const response = await fetch(`https://${AUTH0_DOMAIN}/api/v2/users/${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${mgmtToken}`,
+      },
+      body: JSON.stringify({
+        name: username,
+      }),
+    });
+    const data = await response.json();
+    console.log('Edit profile response data:', data);
+    if (data.error) {
+      return res
+        .status(400)
+        .json({ status: 'error', message: parseAuth0Error(data) });
+    }
+    
+    return res.status(200).json({
+      status: 'ok',
+      first_name: first_name,
+      last_name: last_name,
+    });
+  } catch (err) {
+    console.error('Edit profile error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get("/api/get-profile", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Authorization header is missing." });
+  }
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.decode(token);
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token." });
+    }
+    console.log("Decoded token:", decoded);
+  } catch (err) {
+    console.error('Get profile error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+
+  const response = await fetch(`https://${AUTH0_DOMAIN}/userinfo`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  
+  const data = await response.json();
+  const full_name = data.name ? data.name.replaceAll('_', ' ') : '';
+  // console.log(full_name);
+  console.log('User info data:', data);
+  return res.status(200).json({
+    email: data.email,
+    full_name: full_name,
+  });
 });
   
 

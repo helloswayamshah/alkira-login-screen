@@ -73,6 +73,8 @@ describe('SignUp and Login flow', () => {
   it('SignUp Flow and login with newly created account gives the correct role', () => {
     cy.visit('/signup');
     cy.get('input[name="email"]').type("abc@xyz.com");
+    cy.get('input[name="firstName"]').type("John");
+    cy.get('input[name="lastName"]').type("Doe");
     cy.get('input[name="password"]').type("Xyz@1234");
     cy.get('input[name="confirmPassword"]').type("Xyz@1234");
     cy.get('input[type="radio"][aria-label="writer"]').check();
@@ -95,6 +97,8 @@ describe('SignUp and Login flow', () => {
     cy.visit('/signup');
     cy.get('input[name="email"]').type("xyz@gmail.com");
     cy.get('input[name="password"]').type("Abc@1234");
+    cy.get('input[name="firstName"]').type("John");
+    cy.get('input[name="lastName"]').type("Doe");
     cy.get('input[name="confirmPassword"]').type("Abc@1234");
     cy.get('input[type="radio"][aria-label="reader"]').check();
     cy.get('button').contains('Sign Up').click();
@@ -104,6 +108,8 @@ describe('SignUp and Login flow', () => {
   it('Trying to signup with mismatched passwords shows error', () => {
     cy.visit('/signup');
     cy.get('input[name="email"]').type("abc@gmail.com");
+    cy.get('input[name="firstName"]').type("John");
+    cy.get('input[name="lastName"]').type("Doe");
     cy.get('input[name="password"]').type("Abc@1234");
     cy.get('input[name="confirmPassword"]').type("Abc@12345");
     cy.get('button').contains('Sign Up').click();
@@ -112,6 +118,8 @@ describe('SignUp and Login flow', () => {
   it('Signup with weak password is not allowed', () => {
     cy.visit('/signup');
     cy.get('input[name="email"]').type("abc@gmail.com");
+    cy.get('input[name="firstName"]').type("John");
+    cy.get('input[name="lastName"]').type("Doe");
     cy.get('input[name="password"]').type("abc");
     cy.get('input[name="confirmPassword"]').type("abc");
     cy.get('button').contains('Sign Up').click();
@@ -120,6 +128,8 @@ describe('SignUp and Login flow', () => {
   it("A user signup with reader role cannot see the admin panel", () => {
     cy.visit('/signup');
     cy.get('input[name="email"]').type("abc@gmail.com");
+    cy.get('input[name="firstName"]').type("John");
+    cy.get('input[name="lastName"]').type("Doe");
     cy.get('input[name="password"]').type("Abc@1234");
     cy.get('input[name="confirmPassword"]').type("Abc@1234");
     cy.get('input[type="radio"][aria-label="reader"]').check();
@@ -135,7 +145,7 @@ describe('SignUp and Login flow', () => {
     cy.contains('button', 'Verify').click();
     cy.wait('@mfaVerifyRequest');
     cy.contains('Dashboard');
-    cy.contains('Admin Panel').should('not.exist');
+    cy.get('button[aria-label="edit name"').should('not.exist');
   });
   it('Login with a user with writer role can see admin panel', () => {
     MY_DB[0].role = ['writer'];
@@ -147,7 +157,7 @@ describe('SignUp and Login flow', () => {
     cy.contains('button', 'Verify').click();
     cy.wait('@mfaVerifyRequest');
     cy.contains('Dashboard');
-    cy.contains('Admin Panel');
+    cy.get('button[aria-label="edit name"').should('exist');
   })
 });
 

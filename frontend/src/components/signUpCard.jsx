@@ -8,6 +8,8 @@ function SignupFlow() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('')
   const roles = ['reader', 'writer'];
@@ -65,6 +67,13 @@ function SignupFlow() {
       return;
     }
 
+    if (firstName.trim() === "") {
+      setError('Please enter your first name.');
+      setTimeout(() => setError(null), 5000);
+      return;
+    }
+
+
     // Check role selection
     if (!role) {
       setError('Please select a role.');
@@ -76,9 +85,10 @@ function SignupFlow() {
 
     // If all validations pass, proceed to success page
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const response = await useApi('POST', '/api/signup', {}, { email, password, role });
+    const response = await useApi('POST', '/api/signup', {}, { email, password, role, first_name: firstName, last_name: lastName });
     if (!response.ok) {
       const data = await response.json();
+      console.log(data);
       setError(data.message || 'Signup failed. Please try again.');
       setTimeout(() => setError(null), 5000);
       return;
@@ -147,9 +157,38 @@ function SignupFlow() {
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all"
             />
           </div>
+          {/* Name Inputs */}
+          <div className="name-group flex flex-row gap-8 mb-4">
+          <div className='input-group mb-4'>
+            <label className='block text-lg font-semibold text-gray-900 mb-1'>First Name</label>
+            <input
+              type="text"
+              name='firstName'
+              aria-label='firstName'
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Enter your first name..."
+              className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all'
+            />
+          </div>
+
+          <div className='input-group mb-4'>
+            <label className='block text-lg font-semibold text-gray-900 mb-1'>Last Name</label>
+            <input
+              type="text"
+              name='lastName'
+              aria-label='lastName'
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Enter your last name..."
+              className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all'
+            />
+          </div>
+          </div>
 
           {/* Password Input */}
-          <div className="input-group mb-4">
+          <div className="password-group flex flex-row gap-8 mb-4">
+          <div className="input-group">
             <label className="block text-lg font-semibold text-gray-900 mb-1">Password</label>
             <div className="relative">
               <input
@@ -215,11 +254,12 @@ function SignupFlow() {
               <div className="mt-1 text-xs text-red-500">Passwords do not match</div>
             )}
           </div>
+          </div>
 
           {/* Role Selection */}
           <div className="input-group mb-6">
             <label className="block text-lg font-semibold text-gray-900 mb-3">Select Role</label>
-            <div className="space-y-3">
+            <div className="flex flex-row gap-4">
               {roles.map((r) => {
                 return (
                   <label className="flex items-center cursor-pointer p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">

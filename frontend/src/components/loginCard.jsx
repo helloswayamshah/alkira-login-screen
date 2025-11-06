@@ -78,7 +78,7 @@ function LoginCard() {
               className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all'
             />
           </div>
-          <div className='input-group'>
+          <div className='input-group mb-4'>
             <label className='block text-lg font-semibold text-gray-900'>Password</label>
             <div className="relative">
             <input
