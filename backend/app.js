@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import jwt from "jsonwebtoken";
-import { AUTH0_GRANT_TYPES, MFA_REQUIRED_ERROR } from "./constant.js";
+import { AUTH0_DB_CONNECTION, AUTH0_GRANT_TYPES, MFA_REQUIRED_ERROR } from "./constant.js";
 
 dotenv.config('./.env');
 const app = express();
@@ -43,7 +43,7 @@ app.post("/api/login", async (req, res) => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         grant_type: AUTH0_GRANT_TYPES['password'],
-        realm: 'alkira',
+        realm: AUTH0_DB_CONNECTION,
         username: email,
         password,
         audience: AUTH0_AUDIENCE,
@@ -158,7 +158,7 @@ app.post("/api/signup", async (req, res) => {
         name: username,
         email,
         password,
-        connection: 'alkira',
+        connection: AUTH0_DB_CONNECTION,
       }),
     });
     const data = await response.json();
@@ -278,6 +278,55 @@ app.post("/api/signup", async (req, res) => {
     console.error('Signup error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
+});
+app.post("/api/reset-password", async (req, res) => {
+  if (req.body == undefined) {
+    return res.status(400).json({ message: "Request body is missing." });
+  }
+  const { email } = req.body;
+  if (email === "" || email == undefined) {
+    return res.status(400).json({ message: "Email is required." });
+  }
+  
+ try {
+    const response = await fetch(`https://${AUTH0_DOMAIN}/dbconnections/change_password`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        client_id: AUTH0_CLIENT_ID,
+        email,
+        connection: AUTH0_DB_CONNECTION,
+      }),
+    });
+    const data = await response.text();
+    if (response.ok) {
+      return res.status(200).json({
+        status: 'ok',
+        message: 'Password reset email sent successfully',
+        data,
+      });
+    } else {
+      if (response.status === 404) {
+        return res
+          .status(404)
+          .json({ status: 'error', message: 'User with this email does not exist.' });
+      } else if (response.status === 400) {
+        console.error('Password reset error response:', data);
+        return res
+          .status(400)
+          .json({ status: 'error', message: parseAuth0Error(data) });
+      } else {
+        console.error('Password reset error response:', data);
+        return res
+          .status(500)
+          .json({ status: 'error', message: 'Failed to send password reset email.' });
+      }
+    }
+  } catch (err) {
+    console.error('Password reset error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+    
 });
 
 app.post("/api/mfa-verify", async (req, res) => {

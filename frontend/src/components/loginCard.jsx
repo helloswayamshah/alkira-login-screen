@@ -8,7 +8,7 @@ function LoginCard() {
   const [showPassword, setShowPassword] = useState(false);
   const context = useContext(LoginContext);
   const [error, setError] = useState(null);
-  const { email, setEmail, password, setPassword, rememberMe, setRememberMe, setCurrentPage } = context;
+  const { email, setEmail, password, setPassword, setCurrentPage } = context;
 
   const validateEmail = (email) => {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -101,17 +101,14 @@ function LoginCard() {
           </div>
         </div>
       {/* Remember Me & Forgot Password */}
-        {/* <div className="flex items-center justify-between mt-2 mb-6">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 border-2 border-gray-300 rounded"
-            />
-            <span className="ml-2 text-sm text-gray-700">Remember me</span>
-          </label>
-        </div> */}
+        <button
+          type="button"
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          onClick={() => useNavigation('/reset-password')}
+          className="mb-4 text-sm text-gray-600 hover:underline float-right"
+        >
+        Forgot Password?
+        </button>
         {error && <div className='text-red-500 text-center mb-4'>{error}</div>}
 
         {/* Sign In Button */}
